@@ -1,0 +1,28 @@
+version: '3'
+services:
+  app:
+    image: cptactionhank/atlassian-confluence:latest
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+    volumes:
+      - confluence-datavolume:/var/atlassian/confluence
+      # - :/var/atlassian/confluence # 我们推荐你手工备份Confluence数据库、home目录及附件. 更多信息请查看 我们的在线文档。https://confluence.atlassian.com/doc/configuring-backups-138348.html
+      - ./atlassian-agent.jar:/opt/atlassian/confluence/atlassian-agent.jar
+    command: /bin/bash -c 'JAVA_OPTS="-javaagent:/opt/atlassian/confluence/atlassian-agent.jar" /opt/atlassian/confluence/bin/start-confluence.sh -fg'
+
+  #SQL Service
+  db:
+    # https://confluence.atlassian.com/doc/supported-platforms-207488198.html
+    image: postgres:9.6
+    restart: unless-stopped
+    volumes:
+      - postgres-datavolume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=confluence
+      - POSTGRES_USER=confluence
+      - POSTGRES_PASSWORD=confluence
+
+volumes:
+    confluence-datavolume:
+    postgres-datavolume:
